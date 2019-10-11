@@ -1,45 +1,68 @@
 package util
 
+/*
+#cgo LDFLAGS: -lwinmm
+#include <windows.h>
+#include <mmsystem.h>
+
+HMIDIOUT midi_out_open() {
+	HMIDIOUT hMidiOut;
+
+	midiOutOpen(&hMidiOut, MIDI_MAPPER, 0, 0, 0);
+	return hMidiOut;
+}
+
+void midi_out_close(HMIDIOUT hMidiOut) {
+	midiOutClose(hMidiOut);
+}
+
+void midi_out_short_msg(HMIDIOUT hMidiOut, DWORD msg) {
+	midiOutShortMsg(hMidiOut, msg);
+}
+
+void midi_out_reset(HMIDIOUT hMidiOut) {
+	midiOutReset(hMidiOut);
+}
+
+*/
+import "C"
+
 import (
-	"syscall"
 	"unsafe"
 )
 
 type HMIDIOUT struct {
-	unused int32
+	wrapped C.struct_HMIDIOUT__
 }
 
-func MidiOutOpen(hMidiOut *HMIDIOUT, devid uint) {
-	hMidiOutPtr := unsafe.Pointer(&hMidiOut)
-	var proc = winmmDll.findProc("midiOutOpen")
+func MidiOutOpen(devid uint) *HMIDIOUT {
+	r, err := C.midi_out_open()
+	if err != nil {
+		panic(err)
+	}
 
-	_, _, lastErr := proc.Call(uintptr(nil), uintptr(devid), uintptr(0), uintptr(0), uintptr(0))
-	lastErr = syscall.GetLastError()
-	if lastErr != nil {
-		panic(lastErr)
+	var res = HMIDIOUT{unsafe.Pointer(r)}
+
+	return &res
+}
+
+func MidiOutClose(hmo *HMIDIOUT) {
+	r, err := C.midi_out_close(hmo.wrapped)
+	if err != nil {
+		panic(err)
 	}
 }
 
-func MidiOutClose(hMidiOut *HMIDIOUT) {
-	hMidiOutPtr := unsafe.Pointer(&hMidiOut)
-	var proc = winmmDll.findProc("midiOutClose")
-
-	_, _, lastErr := proc.Call(uintptr(hMidiOutPtr))
-	lastErr = syscall.GetLastError()
-	if lastErr != nil {
-		panic(lastErr)
+func MidiOutReset(hmo *HMIDIOUT) {
+	r, err := C.midi_out_reset(hmo.wrapped)
+	if err != nil {
+		panic(err)
 	}
 }
 
-// MidiOutShortMsg sends msg to the midi device.
-// msg is little-endian.
-func MidiOutShortMsg(hMidiOut *HMIDIOUT, msg uint64) {
-	hMidiOutPtr := unsafe.Pointer(&hMidiOut)
-	var proc = winmmDll.findProc("midiOutShortMsg")
-
-	_, _, lastErr := proc.Call(uintptr(hMidiOutPtr), uintptr(msg))
-	lastErr = syscall.GetLastError()
-	if lastErr != nil {
-		panic(lastErr)
+func MidiOutShortMsg(hmo *HMIDIOUT, msg int64) {
+	r, err := C.midi_out_short_msg(hmo.wrapped, C.ulong(msg))
+	if err != nil {
+		panic(err)
 	}
 }
