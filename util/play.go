@@ -27,41 +27,35 @@ void midi_out_reset(HMIDIOUT hMidiOut) {
 */
 import "C"
 
-import (
-	"unsafe"
-)
-
 type HMIDIOUT struct {
-	wrapped C.struct_HMIDIOUT__
+	wrapped C.HMIDIOUT
 }
 
-func MidiOutOpen(devid uint) *HMIDIOUT {
+func MidiOutOpen(devid uint) HMIDIOUT {
 	r, err := C.midi_out_open()
 	if err != nil {
 		panic(err)
 	}
 
-	var res = HMIDIOUT{unsafe.Pointer(r)}
-
-	return &res
+	return HMIDIOUT{r}
 }
 
 func MidiOutClose(hmo *HMIDIOUT) {
-	r, err := C.midi_out_close(hmo.wrapped)
+	_, err := C.midi_out_close(hmo.wrapped)
 	if err != nil {
 		panic(err)
 	}
 }
 
 func MidiOutReset(hmo *HMIDIOUT) {
-	r, err := C.midi_out_reset(hmo.wrapped)
+	_, err := C.midi_out_reset(hmo.wrapped)
 	if err != nil {
 		panic(err)
 	}
 }
 
 func MidiOutShortMsg(hmo *HMIDIOUT, msg int64) {
-	r, err := C.midi_out_short_msg(hmo.wrapped, C.ulong(msg))
+	_, err := C.midi_out_short_msg(hmo.wrapped, C.ulong(msg))
 	if err != nil {
 		panic(err)
 	}

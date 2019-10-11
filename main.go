@@ -8,12 +8,12 @@ import (
 
 func main() {
 
-	midiH := util.MidiOutOpen(-1)
+	midiH := util.MidiOutOpen(0)
 
-	util.MidiOutShortMsg(midiH, 0x007f3c90)
+	util.MidiOutShortMsg(&midiH, 0x007f3c90)
 	time.Sleep(1000 * time.Millisecond)
-	util.MidiOutShortMsg(midiH, 0x007f3c80)
+	util.MidiOutShortMsg(&midiH, 0x007f3c80)
 
-	util.MidiOutReset(midiH)
-	util.MidiOutClose(midiH)
+	util.MidiOutReset(&midiH)
+	util.MidiOutClose(&midiH)
 }
